@@ -1,0 +1,33 @@
+{
+    "appKeys": {},
+    "capabilities": [
+        ""
+    ],
+    "companyName": "Tamas T",
+    "longName": "Tamas Watchface #2",
+    "projectType": "native",
+    "resources": {
+        "media": [
+            {
+                "file": "fonts/carbon bl.ttf",
+                "name": "CARBON_11",
+                "type": "font"
+            },
+            {
+                "file": "images/Bluetooth_small.png",
+                "name": "BT_ICON",
+                "type": "png"
+            }
+        ]
+    },
+    "sdkVersion": "3",
+    "shortName": "TamaFace2",
+    "targetPlatforms": [
+        "basalt"
+    ],
+    "uuid": "7d8631d1-ce7d-429e-9d44-6ada36ad0fb8",
+    "versionLabel": "1.0",
+    "watchapp": {
+        "watchface": true
+    }
+}
