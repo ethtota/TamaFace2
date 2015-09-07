@@ -10,7 +10,22 @@
         "media": [
             {
                 "file": "fonts/carbon bl.ttf",
+                "name": "CARBON_13",
+                "type": "font"
+            },
+            {
+                "file": "fonts/carbon bl.ttf",
+                "name": "CARBON_20",
+                "type": "font"
+            },
+            {
+                "file": "fonts/carbon bl.ttf",
                 "name": "CARBON_11",
+                "type": "font"
+            },
+            {
+                "file": "fonts/carbon bl.ttf",
+                "name": "CARBON_36",
                 "type": "font"
             },
             {

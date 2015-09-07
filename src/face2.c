@@ -1,26 +1,25 @@
 #include "pebble.h"
 
 // COMMON VARIABLES
-#define BACKGROUND_COLOR GColorOrange
+#define BACKGROUND_COLOR GColorElectricUltramarine
+#define FOREGROUND_COLOR GColorBlack
 #define HOUR_HAND_COLOR GColorRed
 #define MINUTE_HAND_COLOR GColorKellyGreen
 #define SECOND_HAND_COLOR GColorBlueMoon
-#define INFO_LAYER_BKG_COLOR GColorOxfordBlue
 #define TICK_COLOR GColorWhite
 #define TICK_CIRCLE_RADIUS 4
-#define ANALOG_BACKGROUND_COLOR GColorGreen
 #define ANALOG_BORDER_COLOR GColorBlack
-#define ANALOG_FACE_COLOR GColorWhite
+#define ANALOG_FACE_COLOR GColorBabyBlueEyes
 
 	
 // SOME BASIC DECLARATION
 static Window *window;
 static Layer *s_simple_bg_layer, *s_info_layer, *s_analog_clock_layer, *s_battery_draw_layer, *s_calendar_draw_layer;
-static TextLayer *s_date_layer, *s_time_layer, *s_day_layer, *s_battery_layer;
+static TextLayer *s_date_layer, *s_time_layer, *s_day_layer, *s_battery_layer, *s_month_layer;
 static BitmapLayer *s_bitmap_layer_bluetooth;
-static char s_time_buffer[7], s_date_buffer[8], s_day_buffer[5];
+static char s_time_buffer[7], s_date_buffer[3], s_day_buffer[5], s_month_buffer[4];
 static GBitmap *s_bitmap_bluetooth;
-static GFont s_carbon_font;
+static GFont s_carbon_font_battery, s_carbon_font_time, s_carbon_font_date, s_carbon_font_month;
 
 // BACKGROUND UPDATE PROCESS
 static void bg_update_proc(Layer *layer, GContext *ctx) {
@@ -68,7 +67,7 @@ static void analog_update_proc(Layer *layer, GContext *ctx) {
   GRect bounds = layer_get_bounds(layer);
   GPoint center = grect_center_point(&bounds);
   // BACKGROUND COLOR
-  graphics_context_set_fill_color(ctx, ANALOG_BACKGROUND_COLOR);
+  graphics_context_set_fill_color(ctx, BACKGROUND_COLOR);
   graphics_fill_rect(ctx, bounds, 0, GCornerNone);
 
 	// HAND LENGTHs
@@ -126,7 +125,7 @@ static void analog_update_proc(Layer *layer, GContext *ctx) {
   // circle in the middle
   graphics_context_set_fill_color(ctx, SECOND_HAND_COLOR);
   graphics_fill_circle(ctx, center, 5);
-  graphics_context_set_fill_color(ctx, GColorOxfordBlue);
+  graphics_context_set_fill_color(ctx, GColorBlack);
   graphics_fill_circle(ctx, center, 2);
 }
 
@@ -137,14 +136,15 @@ static void battery_draw_update_proc(Layer *layer, GContext *ctx) {
   // BACKGROUND COLOR for battery drawing
   //graphics_context_set_fill_color(ctx, GColorClear);
   //graphics_fill_rect(ctx, bounds, 0, GCornerNone);
-  
+  graphics_context_set_antialiased(ctx, true);
+	
 	// battery outline
-	graphics_context_set_stroke_color(ctx, GColorBlack);
+	graphics_context_set_stroke_color(ctx, FOREGROUND_COLOR);
 	graphics_context_set_stroke_width(ctx, 2);
   graphics_draw_round_rect(ctx, GRect(2, 3, 25, 12), 2);
 
 // battery level
-	graphics_context_set_fill_color(ctx, GColorBlack);
+	graphics_context_set_fill_color(ctx, FOREGROUND_COLOR);
 	graphics_context_set_stroke_width(ctx, 1);
 
 	BatteryChargeState charge_state = battery_state_service_peek();
@@ -194,16 +194,17 @@ static void calendar_draw_update_proc(Layer *layer, GContext *ctx) {
   //graphics_context_set_fill_color(ctx, BACKGROUND_COLOR);
   //graphics_fill_rect(ctx, bounds, 0, GCornerNone);
 	// calendar drawing
-	graphics_context_set_stroke_color(ctx, GColorBlack);
+	graphics_context_set_antialiased(ctx, true);
+	graphics_context_set_stroke_color(ctx, FOREGROUND_COLOR);
 	graphics_context_set_stroke_width(ctx, 2);
-	graphics_context_set_fill_color(ctx, GColorBlack);
+	graphics_context_set_fill_color(ctx, FOREGROUND_COLOR);
 	graphics_fill_rect(ctx, GRect(1, 4, 43, 44), 4, GCornersAll);
 	graphics_context_set_fill_color(ctx, BACKGROUND_COLOR);
 	graphics_fill_rect(ctx, GRect(3, 22, 39, 24), 0, GCornerNone);
   graphics_fill_circle(ctx, GPoint(22,4), 3);
   graphics_fill_circle(ctx, GPoint(11,4), 3);
   graphics_fill_circle(ctx, GPoint(33,4), 3);
-	graphics_context_set_fill_color(ctx, GColorBlack);
+	graphics_context_set_fill_color(ctx, FOREGROUND_COLOR);
 	graphics_fill_rect(ctx, GRect(20, 0, 5, 7), 2, GCornersAll);
 	graphics_fill_rect(ctx, GRect(9, 0, 5, 7), 2, GCornersAll);
 	graphics_fill_rect(ctx, GRect(31, 0, 5, 7), 2, GCornersAll);
@@ -212,13 +213,16 @@ static void info_update_proc(Layer *layer, GContext *ctx) {
   time_t now = time(NULL);
   struct tm *t = localtime(&now);
 
-  strftime(s_date_buffer, sizeof(s_date_buffer), " %b %e", t);
+  strftime(s_date_buffer, sizeof(s_date_buffer), "%d", t);
   text_layer_set_text(s_date_layer, s_date_buffer);
 
-  strftime(s_time_buffer, sizeof(s_time_buffer), "%H:%M", t);
+  strftime(s_month_buffer, sizeof(s_month_buffer), "%b", t);
+  text_layer_set_text(s_month_layer, s_month_buffer);
+
+	strftime(s_time_buffer, sizeof(s_time_buffer), "%H:%M", t);
   text_layer_set_text(s_time_layer, s_time_buffer);
 
-  strftime(s_day_buffer, sizeof(s_day_buffer), "%a ", t);
+  strftime(s_day_buffer, sizeof(s_day_buffer), "%a", t);
   text_layer_set_text(s_day_layer, s_day_buffer);
 }
 
@@ -235,12 +239,18 @@ static void window_load(Window *window) {
   GRect bounds = layer_get_bounds(window_layer);
 	//GFont dense_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_DENSE_22));
   //GFont battery_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_DENSE_14));
-	
-   // BACKGROUND LAYER
+
+	// BACKGROUND LAYER
   s_simple_bg_layer = layer_create(bounds);
   layer_set_update_proc(s_simple_bg_layer, bg_update_proc);
   layer_add_child(window_layer, s_simple_bg_layer);
   
+	// ANALOG CLOCK LAYER
+  GRect analog_bounds = GRect(0, 0, 111, 115);
+  s_analog_clock_layer = layer_create(analog_bounds);
+  layer_set_update_proc(s_analog_clock_layer, analog_update_proc);
+  layer_add_child(window_layer, s_analog_clock_layer);
+
 	// BATTERY drawings
   s_battery_draw_layer = layer_create(GRect(113, 4, 30, 18));
   layer_set_update_proc(s_battery_draw_layer, battery_draw_update_proc);
@@ -257,29 +267,41 @@ static void window_load(Window *window) {
   bitmap_layer_set_bitmap(s_bitmap_layer_bluetooth, s_bitmap_bluetooth);
   bitmap_layer_set_compositing_mode(s_bitmap_layer_bluetooth, GCompOpSet);
   bitmap_layer_set_alignment(s_bitmap_layer_bluetooth, GAlignTopLeft);
-  layer_add_child(window_get_root_layer(window), bitmap_layer_get_layer(s_bitmap_layer_bluetooth));
+  //layer_add_child(window_get_root_layer(window), bitmap_layer_get_layer(s_bitmap_layer_bluetooth));
 
 	// INFO LAYER containing child text layers
   s_info_layer = layer_create(bounds);
   layer_set_update_proc(s_info_layer, info_update_proc);
-  //layer_add_child(window_layer, s_info_layer);
+  layer_add_child(window_layer, s_info_layer);
 	
-	// TEXT LAYER for DATE
-  s_date_layer = text_layer_create(GRect(0, 144, 144, 24));
+	// TEXT LAYER for DATE (hanyadika)
+  s_date_layer = text_layer_create(GRect(99, 138, 37, 23));
   text_layer_set_text(s_date_layer, s_date_buffer);
   text_layer_set_background_color(s_date_layer, GColorClear);
-	text_layer_set_text_alignment(s_date_layer, GTextAlignmentLeft);
-  text_layer_set_text_color(s_date_layer, GColorWhite);
-  text_layer_set_font(s_date_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18));
+	s_carbon_font_date = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_CARBON_20));
+	text_layer_set_text_alignment(s_date_layer, GTextAlignmentCenter);
+  text_layer_set_text_color(s_date_layer, FOREGROUND_COLOR);
+  text_layer_set_font(s_date_layer, s_carbon_font_date);
   layer_add_child(s_info_layer, text_layer_get_layer(s_date_layer));
-	
+
+	// TEXT LAYER for MONTH
+  s_month_layer = text_layer_create(GRect(99, 123, 37, 23));
+  text_layer_set_text(s_month_layer, s_month_buffer);
+  text_layer_set_background_color(s_month_layer, GColorClear);
+	s_carbon_font_month = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_CARBON_13));
+	text_layer_set_text_alignment(s_month_layer, GTextAlignmentCenter);
+  text_layer_set_text_color(s_month_layer, BACKGROUND_COLOR);
+  text_layer_set_font(s_month_layer, s_carbon_font_month);
+  layer_add_child(s_info_layer, text_layer_get_layer(s_month_layer));
+
 	// TEXT LAYER for TIME
-  s_time_layer = text_layer_create(GRect(0, 144, 144, 24));
+  s_time_layer = text_layer_create(GRect(4, 110, 90, 50));
   text_layer_set_text(s_time_layer, s_time_buffer);
   text_layer_set_background_color(s_time_layer, GColorClear);
-	text_layer_set_text_alignment(s_time_layer, GTextAlignmentCenter);
-  text_layer_set_text_color(s_time_layer, GColorWhite);
-  text_layer_set_font(s_time_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
+	s_carbon_font_time = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_CARBON_36));
+	text_layer_set_text_alignment(s_time_layer, GTextAlignmentLeft);
+  text_layer_set_text_color(s_time_layer, FOREGROUND_COLOR);
+  text_layer_set_font(s_time_layer, s_carbon_font_time);
   layer_add_child(s_info_layer, text_layer_get_layer(s_time_layer));
 	
 	// TEXT LAYER for DAY
@@ -289,23 +311,18 @@ static void window_load(Window *window) {
 	text_layer_set_text_alignment(s_day_layer, GTextAlignmentRight);
   text_layer_set_text_color(s_day_layer, GColorWhite);
   text_layer_set_font(s_day_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18));
-  layer_add_child(s_info_layer, text_layer_get_layer(s_day_layer));
+  //layer_add_child(s_info_layer, text_layer_get_layer(s_day_layer));
 	
 	// BATTERY LAYER
   s_battery_layer = text_layer_create(GRect(114, 20, 29, 18));
-  text_layer_set_text_color(s_battery_layer, GColorBlack);
+  text_layer_set_text_color(s_battery_layer, FOREGROUND_COLOR);
   text_layer_set_background_color(s_battery_layer, GColorClear);
-	s_carbon_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_CARBON_11));
-  text_layer_set_font(s_battery_layer, s_carbon_font);
+	s_carbon_font_battery = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_CARBON_11));
+  text_layer_set_font(s_battery_layer, s_carbon_font_battery);
   text_layer_set_text_alignment(s_battery_layer, GTextAlignmentCenter);
   text_layer_set_text(s_battery_layer, "chg");
   layer_add_child(window_layer, text_layer_get_layer(s_battery_layer));
   
-	// ANALOG CLOCK LAYER
-  GRect analog_bounds = GRect(0, 0, 111, 115);
-  s_analog_clock_layer = layer_create(analog_bounds);
-  layer_set_update_proc(s_analog_clock_layer, analog_update_proc);
-  layer_add_child(window_layer, s_analog_clock_layer);
 }
 
 // UNLOAD
@@ -329,10 +346,6 @@ static void init() {
     .unload = window_unload,
   });
   window_stack_push(window, true);
-
-  s_date_buffer[0] = '\0';
-  s_time_buffer[0] = '\0';
-  s_day_buffer[0] = '\0';
 
   tick_timer_service_subscribe(SECOND_UNIT, handle_second_tick);
   battery_state_service_subscribe(handle_battery);
