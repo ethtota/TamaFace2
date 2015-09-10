@@ -1,15 +1,15 @@
 #include "pebble.h"
 
 // COMMON VARIABLES
-#define BACKGROUND_COLOR GColorElectricUltramarine
-#define FOREGROUND_COLOR GColorBlack
+#define BACKGROUND_COLOR GColorBlack
+#define FOREGROUND_COLOR GColorWhite
 #define HOUR_HAND_COLOR GColorRed
 #define MINUTE_HAND_COLOR GColorKellyGreen
 #define SECOND_HAND_COLOR GColorBlueMoon
-#define TICK_COLOR GColorWhite
+#define TICK_COLOR GColorBrilliantRose
 #define TICK_CIRCLE_RADIUS 4
-#define ANALOG_BORDER_COLOR GColorBlack
-#define ANALOG_FACE_COLOR GColorBabyBlueEyes
+#define ANALOG_BORDER_COLOR GColorWhite
+#define ANALOG_FACE_COLOR GColorRajah
 
 	
 // SOME BASIC DECLARATION
@@ -66,14 +66,16 @@ static void handle_battery(BatteryChargeState charge_state) {
 static void analog_update_proc(Layer *layer, GContext *ctx) {
   GRect bounds = layer_get_bounds(layer);
   GPoint center = grect_center_point(&bounds);
-  // BACKGROUND COLOR
+  int16_t analog_radius = bounds.size.w/2-8;
+	// BACKGROUND COLOR
   graphics_context_set_fill_color(ctx, BACKGROUND_COLOR);
+  //graphics_context_set_fill_color(ctx, GColorRed); //temp
   graphics_fill_rect(ctx, bounds, 0, GCornerNone);
 
 	// HAND LENGTHs
-	int16_t second_hand_length = 46;
-  int16_t minute_hand_length = 41;
-  int16_t hour_hand_length = 30;
+	int16_t second_hand_length = analog_radius*0.93;
+  int16_t minute_hand_length = analog_radius*0.75;
+  int16_t hour_hand_length = analog_radius*0.57;
 
 	// ANGLE CALCULATION
   time_t now = time(NULL);
@@ -99,11 +101,11 @@ static void analog_update_proc(Layer *layer, GContext *ctx) {
 	// DRAWING the ANALOG clock
 		// FACE of the ANALOG clock
 	graphics_context_set_fill_color(ctx, ANALOG_FACE_COLOR);
-  graphics_fill_circle(ctx, center, 50);
+  graphics_fill_circle(ctx, center, analog_radius);
   // BORDER of the ANALOG clock
 	graphics_context_set_stroke_width(ctx, 5);
 	graphics_context_set_stroke_color(ctx, ANALOG_BORDER_COLOR);
-  graphics_draw_circle(ctx, center, 50);
+  graphics_draw_circle(ctx, center, analog_radius);
   	
   // minute/hour hand
 	// hour hand base circle
@@ -127,6 +129,32 @@ static void analog_update_proc(Layer *layer, GContext *ctx) {
   graphics_fill_circle(ctx, center, 5);
   graphics_context_set_fill_color(ctx, GColorBlack);
   graphics_fill_circle(ctx, center, 2);
+	
+	
+	// TICK DRAWING
+  graphics_context_set_stroke_color(ctx, TICK_COLOR);
+  graphics_context_set_stroke_width(ctx, 1);
+  for (int i = 0; i < 60; i+=1) {
+    GPoint draw_from = (GPoint) {
+    .x = (int16_t)(sin_lookup(TRIG_MAX_ANGLE * i / 60) * 30 / TRIG_MAX_RATIO) + center.x,
+    .y = (int16_t)(-cos_lookup(TRIG_MAX_ANGLE * i / 60) * 30 / TRIG_MAX_RATIO) + center.y };
+    GPoint draw_to = (GPoint) {
+    .x = (int16_t)(sin_lookup(TRIG_MAX_ANGLE * i / 60) * 50 / TRIG_MAX_RATIO) + center.x,
+    .y = (int16_t)(-cos_lookup(TRIG_MAX_ANGLE * i / 60) * 50 / TRIG_MAX_RATIO) + center.y };
+  graphics_draw_line(ctx, draw_from, draw_to);
+	}
+  graphics_context_set_stroke_width(ctx, 4);
+	for (int i = 0; i < 60; i+=5) {
+    GPoint draw_from = (GPoint) {
+    .x = (int16_t)(sin_lookup(TRIG_MAX_ANGLE * i / 60) * 30 / TRIG_MAX_RATIO) + center.x,
+    .y = (int16_t)(-cos_lookup(TRIG_MAX_ANGLE * i / 60) * 30 / TRIG_MAX_RATIO) + center.y };
+    GPoint draw_to = (GPoint) {
+    .x = (int16_t)(sin_lookup(TRIG_MAX_ANGLE * i / 60) * 50 / TRIG_MAX_RATIO) + center.x,
+    .y = (int16_t)(-cos_lookup(TRIG_MAX_ANGLE * i / 60) * 50 / TRIG_MAX_RATIO) + center.y };
+  graphics_draw_line(ctx, draw_from, draw_to);
+	}
+	
+	
 }
 
 // BATTERY DRAW UPDATE PROCESS
@@ -246,7 +274,7 @@ static void window_load(Window *window) {
   layer_add_child(window_layer, s_simple_bg_layer);
   
 	// ANALOG CLOCK LAYER
-  GRect analog_bounds = GRect(0, 0, 111, 115);
+  GRect analog_bounds = GRect(0, 0, 125, 125);
   s_analog_clock_layer = layer_create(analog_bounds);
   layer_set_update_proc(s_analog_clock_layer, analog_update_proc);
   layer_add_child(window_layer, s_analog_clock_layer);
@@ -295,10 +323,10 @@ static void window_load(Window *window) {
   layer_add_child(s_info_layer, text_layer_get_layer(s_month_layer));
 
 	// TEXT LAYER for TIME
-  s_time_layer = text_layer_create(GRect(4, 110, 90, 50));
+  s_time_layer = text_layer_create(GRect(4, 135, 90, 40));
   text_layer_set_text(s_time_layer, s_time_buffer);
   text_layer_set_background_color(s_time_layer, GColorClear);
-	s_carbon_font_time = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_CARBON_36));
+	s_carbon_font_time = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_CARBON_30));
 	text_layer_set_text_alignment(s_time_layer, GTextAlignmentLeft);
   text_layer_set_text_color(s_time_layer, FOREGROUND_COLOR);
   text_layer_set_font(s_time_layer, s_carbon_font_time);
