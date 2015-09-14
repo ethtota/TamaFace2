@@ -9,6 +9,21 @@
     "resources": {
         "media": [
             {
+                "file": "images/bt_org.png",
+                "name": "BT_ORIGINAL",
+                "type": "png"
+            },
+            {
+                "file": "images/bt_ng.png",
+                "name": "BT_NOT_CONNECTED",
+                "type": "png"
+            },
+            {
+                "file": "images/bt_s.png",
+                "name": "BT_CONNECTED",
+                "type": "png"
+            },
+            {
                 "file": "fonts/carbon bl.ttf",
                 "name": "CARBON_17",
                 "type": "font"
@@ -52,11 +67,6 @@
                 "file": "fonts/carbon bl.ttf",
                 "name": "CARBON_15",
                 "type": "font"
-            },
-            {
-                "file": "images/Bluetooth_small.png",
-                "name": "BT_ICON",
-                "type": "png"
             }
         ]
     },

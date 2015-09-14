@@ -18,7 +18,7 @@ static Layer *s_simple_bg_layer, *s_info_layer, *s_analog_clock_layer, *s_batter
 static TextLayer *s_date_layer, *s_time_layer, *s_seconds_layer, *s_day_layer, *s_battery_layer, *s_month_layer;
 static BitmapLayer *s_bitmap_layer_bluetooth;
 static char s_time_buffer[7], s_date_buffer[3], s_day_buffer[5], s_month_buffer[4], s_seconds_buffer[3];
-static GBitmap *s_bitmap_bluetooth;
+static GBitmap *s_bitmap_bluetooth_ok, *s_bitmap_bluetooth_ng;
 static GFont s_carbon_font_battery, s_carbon_font_time, s_carbon_font_seconds, s_carbon_font_date, s_carbon_font_month, s_carbon_font_day;
 
 // BACKGROUND UPDATE PROCESS
@@ -60,6 +60,16 @@ static void handle_battery(BatteryChargeState charge_state) {
     snprintf(battery_text, sizeof(battery_text), "%d%%", charge_state.charge_percent);
   }
   text_layer_set_text(s_battery_layer, battery_text);
+}
+
+// BLUETOOTH HANDLER
+static void bt_handler(bool connected) {
+  // Show current connection state
+  if (connected) {
+  bitmap_layer_set_bitmap(s_bitmap_layer_bluetooth, s_bitmap_bluetooth_ok);
+  } else {
+  bitmap_layer_set_bitmap(s_bitmap_layer_bluetooth, s_bitmap_bluetooth_ng);
+  }
 }
 
 // HAND UPDATE PROCESS
@@ -312,12 +322,14 @@ static void window_load(Window *window) {
   layer_add_child(window_layer, s_calendar_draw_layer);
 
 	// BITMAP for Bluetooth
-  s_bitmap_bluetooth = gbitmap_create_with_resource(RESOURCE_ID_BT_ICON);
-  s_bitmap_layer_bluetooth = bitmap_layer_create(GRect(116, 55, 60, 70));
-  bitmap_layer_set_bitmap(s_bitmap_layer_bluetooth, s_bitmap_bluetooth);
+  s_bitmap_bluetooth_ok = gbitmap_create_with_resource(RESOURCE_ID_BT_CONNECTED);
+  s_bitmap_bluetooth_ng = gbitmap_create_with_resource(RESOURCE_ID_BT_NOT_CONNECTED);
+  s_bitmap_layer_bluetooth = bitmap_layer_create(GRect(122, 91, 20, 20));
+  bitmap_layer_set_bitmap(s_bitmap_layer_bluetooth, s_bitmap_bluetooth_ok);
   bitmap_layer_set_compositing_mode(s_bitmap_layer_bluetooth, GCompOpSet);
   bitmap_layer_set_alignment(s_bitmap_layer_bluetooth, GAlignTopLeft);
-  //layer_add_child(window_get_root_layer(window), bitmap_layer_get_layer(s_bitmap_layer_bluetooth));
+  layer_add_child(window_get_root_layer(window), bitmap_layer_get_layer(s_bitmap_layer_bluetooth));
+	bt_handler(bluetooth_connection_service_peek());
 
 	// INFO LAYER containing child text layers
   s_info_layer = layer_create(bounds);
@@ -410,7 +422,7 @@ static void init() {
 
   tick_timer_service_subscribe(SECOND_UNIT, handle_second_tick);
   battery_state_service_subscribe(handle_battery);
-
+  bluetooth_connection_service_subscribe(bt_handler);
 }
 
 // DE-INIT
