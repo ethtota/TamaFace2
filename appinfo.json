@@ -9,53 +9,28 @@
     "resources": {
         "media": [
             {
+                "file": "images/bt_NG.png",
+                "name": "BT_NOT_CONNECTED",
+                "type": "png"
+            },
+            {
+                "file": "images/bt_OK.png",
+                "name": "BT_CONNECTED",
+                "type": "png"
+            },
+            {
                 "file": "images/bt_org.png",
                 "name": "BT_ORIGINAL",
                 "type": "png"
             },
             {
-                "file": "images/bt_ng.png",
-                "name": "BT_NOT_CONNECTED",
-                "type": "png"
-            },
-            {
-                "file": "images/bt_s.png",
-                "name": "BT_CONNECTED",
-                "type": "png"
-            },
-            {
                 "file": "fonts/carbon bl.ttf",
-                "name": "CARBON_17",
+                "name": "CARBON_16",
                 "type": "font"
             },
             {
                 "file": "fonts/carbon bl.ttf",
-                "name": "CARBON_22",
-                "type": "font"
-            },
-            {
-                "file": "fonts/carbon bl.ttf",
-                "name": "CARBON_30",
-                "type": "font"
-            },
-            {
-                "file": "fonts/carbon bl.ttf",
-                "name": "CARBON_25",
-                "type": "font"
-            },
-            {
-                "file": "fonts/carbon bl.ttf",
-                "name": "CARBON_36",
-                "type": "font"
-            },
-            {
-                "file": "fonts/carbon bl.ttf",
-                "name": "CARBON_11",
-                "type": "font"
-            },
-            {
-                "file": "fonts/carbon bl.ttf",
-                "name": "CARBON_20",
+                "name": "CARBON_15",
                 "type": "font"
             },
             {
@@ -65,7 +40,37 @@
             },
             {
                 "file": "fonts/carbon bl.ttf",
-                "name": "CARBON_15",
+                "name": "CARBON_20",
+                "type": "font"
+            },
+            {
+                "file": "fonts/carbon bl.ttf",
+                "name": "CARBON_11",
+                "type": "font"
+            },
+            {
+                "file": "fonts/carbon bl.ttf",
+                "name": "CARBON_36",
+                "type": "font"
+            },
+            {
+                "file": "fonts/carbon bl.ttf",
+                "name": "CARBON_25",
+                "type": "font"
+            },
+            {
+                "file": "fonts/carbon bl.ttf",
+                "name": "CARBON_30",
+                "type": "font"
+            },
+            {
+                "file": "fonts/carbon bl.ttf",
+                "name": "CARBON_22",
+                "type": "font"
+            },
+            {
+                "file": "fonts/carbon bl.ttf",
+                "name": "CARBON_17",
                 "type": "font"
             }
         ]

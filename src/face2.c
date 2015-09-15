@@ -289,6 +289,7 @@ static void info_update_proc(Layer *layer, GContext *ctx) {
 static void handle_second_tick(struct tm *tick_time, TimeUnits units_changed) {
   layer_mark_dirty(window_get_root_layer(window));
 	handle_battery(battery_state_service_peek());
+	bt_handler(bluetooth_connection_service_peek());
 }
 
 // -------- MAIN WINDOW HANDLERS -------- //
@@ -324,12 +325,11 @@ static void window_load(Window *window) {
 	// BITMAP for Bluetooth
   s_bitmap_bluetooth_ok = gbitmap_create_with_resource(RESOURCE_ID_BT_CONNECTED);
   s_bitmap_bluetooth_ng = gbitmap_create_with_resource(RESOURCE_ID_BT_NOT_CONNECTED);
-  s_bitmap_layer_bluetooth = bitmap_layer_create(GRect(122, 91, 20, 20));
+  s_bitmap_layer_bluetooth = bitmap_layer_create(GRect(122, 85, 25, 25));
   bitmap_layer_set_bitmap(s_bitmap_layer_bluetooth, s_bitmap_bluetooth_ok);
   bitmap_layer_set_compositing_mode(s_bitmap_layer_bluetooth, GCompOpSet);
   bitmap_layer_set_alignment(s_bitmap_layer_bluetooth, GAlignTopLeft);
   layer_add_child(window_get_root_layer(window), bitmap_layer_get_layer(s_bitmap_layer_bluetooth));
-	bt_handler(bluetooth_connection_service_peek());
 
 	// INFO LAYER containing child text layers
   s_info_layer = layer_create(bounds);
@@ -357,7 +357,7 @@ static void window_load(Window *window) {
   layer_add_child(s_info_layer, text_layer_get_layer(s_month_layer));
 
 	// TEXT LAYER for TIME
-  s_time_layer = text_layer_create(GRect(0, 135, 74, 40));
+  s_time_layer = text_layer_create(GRect(1, 135, 80, 40));
   text_layer_set_text(s_time_layer, s_time_buffer);
   text_layer_set_background_color(s_time_layer, GColorClear);
 	s_carbon_font_time = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_CARBON_30));
@@ -367,10 +367,10 @@ static void window_load(Window *window) {
   layer_add_child(s_info_layer, text_layer_get_layer(s_time_layer));
 
 	// TEXT LAYER for seconds (TIME)
-  s_seconds_layer = text_layer_create(GRect(79, 150, 25, 25));
+  s_seconds_layer = text_layer_create(GRect(82, 149, 25, 25));
   text_layer_set_text(s_seconds_layer, s_seconds_buffer);
   text_layer_set_background_color(s_seconds_layer, GColorClear);
-	s_carbon_font_seconds = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_CARBON_15));
+	s_carbon_font_seconds = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_CARBON_16));
 	text_layer_set_text_alignment(s_seconds_layer, GTextAlignmentLeft);
   text_layer_set_text_color(s_seconds_layer, SECOND_HAND_COLOR);
   text_layer_set_font(s_seconds_layer, s_carbon_font_seconds);
